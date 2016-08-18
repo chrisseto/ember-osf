@@ -96,27 +96,20 @@ export default Ember.Mixin.create({
             return node.save();
         },
         /**
-         * Add a contributor to a node
+         * Add a contributor to a node - either need a user id to add an already-existing user to your project, or a
+         * fullName/email combination to add an unregistered user to the project.  Only use one or the other.
          *
          * @method addContributor
          * @param {String} userId ID of user that will be a contributor on the node
          * @param {String} permission User permission level. One of "read", "write", or "admin". Default: "write".
          * @param {Boolean} isBibliographic Whether user will be included in citations for the node. "default: true"
-         * @return {Promise} Returns a promise that resolves to the newly created contributor object.
-         */
-        addContributor(userId, permission, isBibliographic) {
-            return this.get('_node').addContributor(...arguments);
-        },
-        /**
-         * Add unregistered contributor to a node.  Creates a user and then adds that user as a contributor.
-         *
-         * @method addUnregisteredContributor
          * @param {String} fullName Full name of user
          * @param {String} email User's email
-         * @return {Promise} Returns a promise that resolves to the created contributor
+         * @param {Boolean} sendEmail Should email be sent to contributor?
+         * @return {Promise} Returns a promise that resolves to the newly created contributor object.
          */
-        addUnregisteredContributor(fullName, email, permission, isBibliographic) {
-            return this.get('_node').addUnregisteredContributor(...arguments);
+        addContributor(userId, permission, isBibliographic, fullName, email, sendEmail, index) {
+            return this.get('_node').addContributor(...arguments);
         },
         /**
          * Remove a contributor from a node
@@ -140,24 +133,20 @@ export default Ember.Mixin.create({
          * @param {Contributor[]} contributors Contributor relationships on the node.
          * @param {Object} permissionsChanges Dictionary mapping contributor ids to desired permissions.
          * @param {Object} bibliographicChanges Dictionary mapping contributor ids to desired bibliographic statuses
-         * @return {Promise} Returns a promise that resolves to the updated node
-         * with edited contributor relationships.
+         * @return {Promise} Returns a promise that resolves to the updated contributors
          */
         updateContributors(contributors, permissionsChanges, bibliographicChanges) {
             return this.get('_node').updateContributors(...arguments);
         },
-
-        /**
-         * Update contributors of a node. Makes a bulk request to the APIv2.
-         *
-         * @method updateContributor
-         * @param {Contributor} contributor relationship on the node.
-         * @param {string} permissions desired permissions.
-         * @param {boolean} bibliographic desired bibliographic statuses
-         * @return {Promise} Returns a promise that resolves to the updated node
-         * with edited contributor relationships.
-         */
-        updateContributor(contributor, permissions, bibliographic) {
+        /** Update a single contributor on a node.
+        *
+        * @method updateContributor
+        * @param {Contributor[]} contributor Contributor record to be modified
+        * @param {Object} permission New contributor permission
+        * @param {Object} bibliographic New contributor bibliographic status
+        * @return {Promise} Returns a promise that resolves to the updated contributor.
+        */
+        updateContributor(contributor, permission, bibliographic) {
             return this.get('_node').updateContributor(...arguments);
         },
         /**

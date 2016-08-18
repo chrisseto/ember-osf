@@ -159,29 +159,24 @@ export default OsfModel.extend(FileItemMixin, {
         });
     },
 
-    addUnregisteredContributor(fullName, email, permission, isBibliographic, index=Number.MAX_SAFE_INTEGER) {
-        let user = this.store.createRecord('user', {
-            fullName: fullName,
-            username: email
-        });
-        // After user has been saved, add user as a contributor
-        return user.save().then(user => this.addContributor(user.id, permission, isBibliographic, index));
-
-    },
-
-    addContributor(userId, permission, isBibliographic, index=Number.MAX_SAFE_INTEGER) {
+    addContributor(userId, permission, isBibliographic, fullName, email, sendEmail=true, index=Number.MAX_SAFE_INTEGER) {
         let contrib = this.store.createRecord('contributor', {
             // Original code used the line below.
             // Serialize does something weird I guess
             // id: `${this.get('id')}-${userId}`,
-            id: userId,
+            id: `${this.get('id')}-${userId}`,
             index: index,
             permission: permission,
             bibliographic: isBibliographic,
+            fullName: fullName,
+            email: email
         });
+        var sendEmailQuery = sendEmail ? '' : '?send_email=false';
+        var serializedContrib = contrib.serialize();
+        serializedContrib.data.relationships.users.data.id = userId;
 
-        return this.store.adapterFor('contributor').ajax(this.get('links.relationships.contributors.links.related.href'), 'POST', {
-            data: contrib.serialize()
+        return this.store.adapterFor('contributor').ajax(this.get('links.relationships.contributors.links.related.href') + sendEmailQuery, 'POST', {
+            data: serializedContrib
         }).then(resp => {
             contrib.unloadRecord();
             this.store.pushPayload(resp);
@@ -191,10 +186,10 @@ export default OsfModel.extend(FileItemMixin, {
         });
     },
 
-    updateContributor(contributor, permissions, bibliographic) {
-        if (permissions === '')
-            contributor.set('permission', permissions);
-        if (bibliographic === '')
+    updateContributor(contributor, permission, bibliographic) {
+        if (permission !== '')
+            contributor.set('permission', permission);
+        if (bibliographic !== '')
             contributor.set('bibliographic', bibliographic);
 
         return contributor.save();
@@ -214,7 +209,7 @@ export default OsfModel.extend(FileItemMixin, {
             });
 
         return this.store.adapterFor('contributor').ajax(this.get('links.relationships.contributors.links.related.href'), 'PATCH', {
-            data: {data: payload},
+            data: { data: payload },
             isBulk: true,
         }).then(resp => {
             this.store.pushPayload(resp);
