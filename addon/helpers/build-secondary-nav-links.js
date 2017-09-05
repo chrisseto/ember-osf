@@ -76,6 +76,17 @@ export default Ember.Helper.extend({  // Helper defined using a class, so can in
                 },
 
             ],
+            REVIEWS: [
+                {
+                    name: 'eosf.navbar.support',
+                    href: serviceLinks.reviewsSupport
+                },
+                {
+                    name: 'eosf.navbar.donate',
+                    href: 'https://cos.io/donate',
+                    type: 'donateToCOS'
+                },
+            ],
             MEETINGS: [
                 {
                     name: 'eosf.navbar.search',
